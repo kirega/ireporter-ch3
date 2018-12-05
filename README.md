@@ -1,4 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.com/kirega/ireporter-ch3.svg?branch=develop)](https://travis-ci.com/kirega/ireporter-ch3)
+[![Maintainability](https://api.codeclimate.com/v1/badges/bdcb7758901f1a806bb1/maintainability)](https://codeclimate.com/github/kirega/ireporter-ch3/maintainability)
+
 # iReporter
 ## Project Overview
 Corruption is a huge bane to Africa’s development. African countries must develop novel and
@@ -10,9 +13,10 @@ To view this site : https://kirega.github.io/iReporter/
 ## Technologies used.
 
 * Python 3
-
 * flask
 * flask-restful
+* flask-jwt
+* Postgres
 
 ## [Pivotal Tacker Stories](https://www.pivotaltracker.com/n/projects/2227132)
 
