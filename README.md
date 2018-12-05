@@ -1,6 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.com/kirega/ireporter-ch3.svg?branch=develop)](https://travis-ci.com/kirega/ireporter-ch3)
 [![Maintainability](https://api.codeclimate.com/v1/badges/bdcb7758901f1a806bb1/maintainability)](https://codeclimate.com/github/kirega/ireporter-ch3/maintainability)
+[![Coverage Status](https://coveralls.io/repos/github/kirega/ireporter-ch3/badge.svg?branch=develop)](https://coveralls.io/github/kirega/ireporter-ch3?branch=develop)
 
 # iReporter
 ## Project Overview
