@@ -47,13 +47,19 @@ def init_db():
     conn = connection(URL)
     return conn
 
-def create_tables():
+def create_tables(queries):
     conn = connection(URL)
     curr = conn.cursor()
-    queries =  tables()
     for i in queries:
         curr.execute(i)
     conn.commit()
 
 def init_db_migrate():
-    create_tables()
+    create_tables(tables())
+
+def db_destroy(q):
+    conn = connection(URL)
+    curr = conn.cursor()
+    for i in q:
+        curr.execute(i)
+    conn.commit()
