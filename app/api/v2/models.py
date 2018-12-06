@@ -1,10 +1,10 @@
 """Defining the models of the system"""
 
-from ...db_con import create_tables, init_db
+from ...db_con import init_db_migrate, init_db
 from passlib.hash import pbkdf2_sha256 as sha256
 import psycopg2
 import psycopg2.extras
-create_tables()
+init_db_migrate()
 
 class User ():
     def __init__(self):
@@ -38,7 +38,7 @@ class User ():
 
     @staticmethod
     def encrypt_password(password):
-        return sha256.encrypt(password)
+        return sha256.hash(password)
 
     @staticmethod
     def check_encrypted_password(password, hashed):
