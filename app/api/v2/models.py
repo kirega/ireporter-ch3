@@ -115,3 +115,13 @@ class Incident():
         else:
             self.db.commit()
             return True
+
+    def edit_location(self, incidentId, location, createdBy):
+        try: 
+            self.curr.execute("UPDATE public.\"Incident\" SET location = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
+            (location,createdBy,incidentId,'draft',))
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            self.db.commit()
+            return True

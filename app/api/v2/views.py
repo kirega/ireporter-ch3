@@ -218,3 +218,39 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
 
         return make_response(jsonify({
             "message": "Cannot update a record at the moment"}), 403)
+
+
+class IncidentEditLocationEndpoint(BaseEndpoint):
+    """
+    Enpoint PUT /incident/1
+    Allows for editing the location on an incident
+    """
+    @jwt_required
+    def put(self, incidentId):
+        """  Allows for editing the location on an incident"""
+
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        data = request.get_json(force=True)
+        incident_data = IncidentEditSchema(
+            only=('location',)).load(data)
+        if incident_data.errors:
+            return make_response(jsonify({
+                "message": "location/userid is not present",
+                "required": incident_data.errors}),
+                400)
+
+        exists_owned = self.i.validate_edit(incidentId, createdBy)
+
+        if exists_owned is None or exists_owned == False:
+            return make_response(jsonify({
+                "message": "Forbidden: Record not owned/ Not in draft status"}), 403)
+
+        edit = self.i.edit_location(incidentId, data['location'], createdBy)
+        if edit == True:
+            return make_response(jsonify({
+                'message': "Incident Updated",
+            }), 200)
+
+        return make_response(jsonify({
+            "message": "Cannot update a record at the moment"}), 403)
