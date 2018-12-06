@@ -158,7 +158,7 @@ class IncidentEndpoint(BaseEndpoint):
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
-        if results == False or results is None:
+        if results == False or results is None or len(results) < 1:
             return make_response(jsonify({"message": "No incident by that id"}))
         return make_response(jsonify(results), 200)
 
@@ -170,13 +170,15 @@ class IncidentEndpoint(BaseEndpoint):
         """
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
-        result = self.i.delete(incidentId, createdBy)
+        exists_owned = self.i.get_incident(incidentId, createdBy)
 
+        if exists_owned == False or exists_owned is None or len(exists_owned) < 1:
+            return make_response(jsonify({"message": "Forbiden cannot delete,record may not exist",
+                                          "status": 403}), 403)
+
+        result = self.i.delete(incidentId, createdBy)
         if result:
             return make_response(jsonify({
                 "message": "Incident record has been deleted",
                 "status": 204}
-                ), 200)
-
-        return make_response(jsonify({"message": "Forbiden cannot delete",
-                                    "status": 403}), 403)
+            ), 200)
