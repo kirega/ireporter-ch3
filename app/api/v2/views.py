@@ -2,12 +2,14 @@
 this file will include all the view endpoints for the application.
 """
 
-from flask import make_response, jsonify, request
+from flask import jsonify, make_response, request
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt_identity, jwt_refresh_token_required,
+                                jwt_required)
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+
 from .models import User
-from .validators import (UserSchema, IncidentSchema,
-                         IncidentEditSchema)
+from .validators import IncidentEditSchema, IncidentSchema, UserSchema
 
 
 class BaseAuthEndpoint(Resource):
@@ -45,7 +47,9 @@ class SignUpEndpoint(BaseAuthEndpoint):
         if success:
             return make_response(jsonify({
                 "message": "Sign Up successful. Welcome!",
-                "access_token": create_access_token(identity=user_data["username"])}),
+                "refresh_token": create_refresh_token(identity=user_data["username"]),
+                "access_token": create_access_token(identity=user_data["username"])}
+                ),
                 201)
         
         return make_response(jsonify({"message": "Username/Email already exists"}), 400)
@@ -62,6 +66,7 @@ class LoginEndpoint(BaseAuthEndpoint):
         if error:
             return make_response(jsonify({
                 "message": "Missing or invalid field members",
+                "refresh_token": create_refresh_token(identity=user_data["username"]),
                 "required": error}), 400)
 
         result = self.u.get_user(user_data['username'])
@@ -73,3 +78,15 @@ class LoginEndpoint(BaseAuthEndpoint):
             return make_response(jsonify({"message": "Login Success!"}), 200)
 
         return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
+
+class RefreshTokenEndpoint(Resource):
+    """Returns the a new refresh token"""
+
+    @jwt_refresh_token_required
+    def post(self):
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity = current_user)
+        return make_response(jsonify({
+            'message':"New access token created",
+            'access_token': access_token}),
+            201)
