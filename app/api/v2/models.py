@@ -100,16 +100,16 @@ class Incident():
     def validate_edit(self,incidentId,createdBy):
         try: 
             self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s AND id = %s AND status = %s ;",
-            (createdBy,incidentId,'draft'))
+            (createdBy,incidentId,"draft",))
         except psycopg2.ProgrammingError:
             return False
         else:
             return self.curr.fetchone()
 
-    def edit_comment(self, incidentId, comment):
+    def edit_comment(self, incidentId, comment, createdBy):
         try: 
-            self.curr.execute("UPDATE public.\"Incident\" SET comment = %s  WHERE createdBy = %s AND id = %s AND status = %s ;",
-            (comment,incidentId,'draft'))
+            self.curr.execute("UPDATE public.\"Incident\" SET comment = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
+            (comment,createdBy,incidentId,'draft',))
         except psycopg2.ProgrammingError:
             return False
         else:

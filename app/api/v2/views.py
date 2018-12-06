@@ -206,11 +206,11 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
 
         exists_owned = self.i.validate_edit(incidentId, createdBy)
 
-        if exists_owned is not None or exists_owned == False:
+        if exists_owned is None or exists_owned == False:
             return make_response(jsonify({
                 "message": "Forbidden: Record not owned/ Not in draft status"}), 403)
 
-        edit = self.i.edit_comment(incidentId, data['comment'])
+        edit = self.i.edit_comment(incidentId, data['comment'], createdBy)
         if edit == True:
             return make_response(jsonify({
                 'message': "Incident Updated",
