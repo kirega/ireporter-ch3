@@ -158,7 +158,7 @@ class IncidentEndpoint(BaseEndpoint):
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
-        if results == False or results is None or len(results) < 1:
+        if results == False or results is None:
             return make_response(jsonify({"message": "No incident by that id"}))
         return make_response(jsonify(results), 200)
 
@@ -172,7 +172,7 @@ class IncidentEndpoint(BaseEndpoint):
         createdBy = self.u.get_user(user)['id']
         exists_owned = self.i.get_incident(incidentId, createdBy)
 
-        if exists_owned == False or exists_owned is None or len(exists_owned) < 1:
+        if exists_owned == False or exists_owned is None:
             return make_response(jsonify({"message": "Forbiden cannot delete,record may not exist",
                                           "status": 403}), 403)
 
@@ -182,3 +182,39 @@ class IncidentEndpoint(BaseEndpoint):
                 "message": "Incident record has been deleted",
                 "status": 204}
             ), 200)
+
+
+class IncidentEditCommentEndpoint(BaseEndpoint):
+    """
+    Enpoint PUT /incident/1
+    Allows for editing the comment on an incident
+    """
+    @jwt_required
+    def put(self, incidentId):
+        """Allows for editing the comment on an incident"""
+
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        data = request.get_json(force=True)
+        incident_data = IncidentEditSchema(
+            only=('comment',)).load(data)
+        if incident_data.errors:
+            return make_response(jsonify({
+                "message": "Comment is not present",
+                "required": incident_data.errors}),
+                400)
+
+        exists_owned = self.i.validate_edit(incidentId, createdBy)
+
+        if exists_owned is not None or exists_owned == False:
+            return make_response(jsonify({
+                "message": "Forbidden: Record not owned/ Not in draft status"}), 403)
+
+        edit = self.i.edit_comment(incidentId, data['comment'])
+        if edit == True:
+            return make_response(jsonify({
+                'message': "Incident Updated",
+            }), 200)
+
+        return make_response(jsonify({
+            "message": "Cannot update a record at the moment"}), 403)
