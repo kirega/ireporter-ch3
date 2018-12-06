@@ -68,6 +68,17 @@ class Incident():
             self.db.commit()
             return True
 
+    def delete(self,incidentId,createdBy):
+        try: 
+            self.curr.execute("DELETE FROM public.\"Incident\" WHERE createdBy = %s AND id = %s ;",
+            (createdBy,incidentId,))
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            self.db.commit()
+            return True
+            
+
     def get_incident(self,incidentId,createdBy):
         try: 
             self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s AND id = %s ;",

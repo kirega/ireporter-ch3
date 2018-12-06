@@ -3,7 +3,7 @@ this file will include all the view endpoints for the application.
 """
 import datetime
 import json
-from flask import jsonify, make_response, request 
+from flask import jsonify, make_response, request
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt_identity, jwt_refresh_token_required,
                                 jwt_required)
@@ -17,6 +17,7 @@ class BaseEndpoint(Resource):
     def __init__(self):
         self.u = User()
         self.i = Incident()
+
 
 class SignUpEndpoint(BaseEndpoint):
     """
@@ -50,10 +51,11 @@ class SignUpEndpoint(BaseEndpoint):
                 "message": "Sign Up successful. Welcome!",
                 "refresh_token": create_refresh_token(identity=user_data["username"]),
                 "access_token": create_access_token(identity=user_data["username"])}
-                ),
+            ),
                 201)
-        
+
         return make_response(jsonify({"message": "Username/Email already exists"}), 400)
+
 
 class LoginEndpoint(BaseEndpoint):
     """ This endpoints handles all login posts  POST /login"""
@@ -70,8 +72,8 @@ class LoginEndpoint(BaseEndpoint):
                 "required": error}), 400)
 
         result = self.u.get_user(user_data['username'])
-       
-        if result == False or result  == None:
+
+        if result == False or result == None:
             return make_response(jsonify({"message": "Login Failed, User does not exist!"}), 401)
 
         if self.u.check_encrypted_password(user_data['password'], result['password']):
@@ -81,26 +83,31 @@ class LoginEndpoint(BaseEndpoint):
 
         return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
 
+
 class RefreshTokenEndpoint(Resource):
     """Returns the a new refresh token"""
 
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        access_token = create_access_token(identity = current_user)
+        access_token = create_access_token(identity=current_user)
         return make_response(jsonify({
-            'message':"New access token created",
+            'message': "New access token created",
             'access_token': access_token}),
             201)
+
 
 class AllIncidentsEndpoint(BaseEndpoint):
     """Allows for getting all incidents and posting of any new one"""
 
     @jwt_required
     def post(self):
+        """Endpoint POST /incidents
+        Allows creation of new incidents"""
+
         data = request.get_json(force=True)
         incident_data, error = IncidentSchema(
-            only=('incidentType','location','comment','images','videos')
+            only=('incidentType', 'location', 'comment', 'images', 'videos')
         ).load(data)
         if error:
             return make_response(jsonify({
@@ -116,31 +123,62 @@ class AllIncidentsEndpoint(BaseEndpoint):
             createdBy,
             incident_data['images'],
             incident_data['videos'],
-            )
+        )
         if success:
             return make_response(jsonify({
                 "message": "New incident created"}
-                ), 201)
+            ), 201)
+
     @staticmethod
     def convert(s):
-        if isinstance(s,datetime.datetime):
+        if isinstance(s, datetime.datetime):
             return s.__str__()
-        
+
     @jwt_required
     def get(self):
+        """Endpoint GET /incidents.
+        Returns list of all incidents"""
+
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incidents(createdBy)
-        if results == False or results is None :
-            return make_response(jsonify({"message":"No incidents"}))
+        if results == False or results is None:
+            return make_response(jsonify({"message": "No incidents"}))
         return make_response(jsonify(results), 200)
+
 
 class IncidentEndpoint(BaseEndpoint):
     @jwt_required
-    def get(self,incidentId):
+    def get(self, incidentId):
+        """
+        GET /incident/<incidentId>
+        Returns a single instance
+        """
+
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
-        results = self.i.get_incident(incidentId,createdBy)
-        if results == False or results is None :
-            return make_response(jsonify({"message":"No incident by that id"}))
+        results = self.i.get_incident(incidentId, createdBy)
+        if results == False or results is None or len(results) < 1:
+            return make_response(jsonify({"message": "No incident by that id"}))
         return make_response(jsonify(results), 200)
+
+    @jwt_required
+    def delete(self, incidentId):
+        """
+        DELETE /incident/<incidentId>
+        deletes a single instance
+        """
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        exists_owned = self.i.get_incident(incidentId, createdBy)
+
+        if exists_owned == False or exists_owned is None or len(exists_owned) < 1:
+            return make_response(jsonify({"message": "Forbiden cannot delete,record may not exist",
+                                          "status": 403}), 403)
+
+        result = self.i.delete(incidentId, createdBy)
+        if result:
+            return make_response(jsonify({
+                "message": "Incident record has been deleted",
+                "status": 204}
+            ), 200)
