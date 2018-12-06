@@ -131,4 +131,16 @@ class AllIncidentsEndpoint(BaseEndpoint):
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incidents(createdBy)
+        if results == False or results is None :
+            return make_response(jsonify({"message":"No incidents"}))
+        return make_response(jsonify(results), 200)
+
+class IncidentEndpoint(BaseEndpoint):
+    @jwt_required
+    def get(self,incidentId):
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        results = self.i.get_incident(incidentId,createdBy)
+        if results == False or results is None :
+            return make_response(jsonify({"message":"No incident by that id"}))
         return make_response(jsonify(results), 200)
