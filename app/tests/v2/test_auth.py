@@ -71,14 +71,14 @@ class FlaskUserTest(BaseTestCase):
         data = json.loads(result.data)
         self.assertEqual(data['message'], "Missing or invalid field members")
 
-    # def test_7_login_with_nonexisting_user(self):
-    #     """Test that a user providing correct credentials in is unable to login
-    #      if user does not exist"""
-    #     result = self.app.post(
-    #         '/api/v2/login', data=self.nonexisting_user)
-    #     self.assertEqual(result.status_code, 401)
-    #     data = json.loads(result.data)
-    #     self.assertEqual(data['message'], "Login Failed, User does not exist!")
+    def test_7_login_with_nonexisting_user(self):
+        """Test that a user providing correct credentials in is unable to login
+         if user does not exist"""
+        result = self.app.post(
+            '/api/v2/login', data=self.nonexisting_user)
+        self.assertEqual(result.status_code, 401)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "Login Failed, User does not exist!")
 
     def test_8_login_with_wrong_pwd(self):
         """Test that a user providing correct credentials in is unable to login

@@ -70,7 +70,7 @@ class LoginEndpoint(BaseAuthEndpoint):
 
         result = self.u.get_user(user_data['username'])
        
-        if result == False:
+        if result == False or result  == None:
             return make_response(jsonify({"message": "Login Failed, User does not exist!"}), 401)
 
         if self.u.check_encrypted_password(user_data['password'], result['password']):
