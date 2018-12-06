@@ -1,8 +1,9 @@
 """
 this file will include all the view endpoints for the application.
 """
-
-from flask import jsonify, make_response, request
+import datetime
+import json
+from flask import jsonify, make_response, request 
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt_identity, jwt_refresh_token_required,
                                 jwt_required)
@@ -120,14 +121,14 @@ class AllIncidentsEndpoint(BaseEndpoint):
             return make_response(jsonify({
                 "message": "New incident created"}
                 ), 201)
-
-        return make_response(jsonify({"message": "Not Authorized"}), 401)
-                
-        # result = self.u.get_user(incident_data['username'])
-        # if self.user.search_user(incident_data['createdBy']):
-        #     new_incident = self.db.save(data['incidentType'], data["comment"], data['location'],
-        #                                 data['createdBy'], data['images'], data['videos'])
-        #     return make_response(jsonify({"message": "New incident created",
-        #                                   "data": new_incident}), 201)
-
-        # return make_response(jsonify({"message": "Not Authorized"}), 401)
+    @staticmethod
+    def convert(s):
+        if isinstance(s,datetime.datetime):
+            return s.__str__()
+        
+    @jwt_required
+    def get(self):
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        results = self.i.get_incidents(createdBy)
+        return make_response(jsonify(results), 200)
