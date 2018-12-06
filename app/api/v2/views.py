@@ -62,20 +62,21 @@ class LoginEndpoint(BaseAuthEndpoint):
 
         data = request.get_json(force=True)
         user_data, error = UserSchema(
-            only=('username', 'password')).load(data)
+            only=('username', 'password',)).load(data)
         if error:
             return make_response(jsonify({
                 "message": "Missing or invalid field members",
-                "refresh_token": create_refresh_token(identity=user_data["username"]),
                 "required": error}), 400)
 
         result = self.u.get_user(user_data['username'])
        
-        if result == False:
+        if result == False or result  == None:
             return make_response(jsonify({"message": "Login Failed, User does not exist!"}), 401)
 
         if self.u.check_encrypted_password(user_data['password'], result['password']):
-            return make_response(jsonify({"message": "Login Success!"}), 200)
+            return make_response(jsonify({
+                "message": "Login Success!",
+                "refresh_token": create_refresh_token(identity=user_data["username"])}), 200)
 
         return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
 
