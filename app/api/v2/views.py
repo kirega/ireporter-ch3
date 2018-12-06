@@ -50,3 +50,26 @@ class SignUpEndpoint(BaseAuthEndpoint):
         
         return make_response(jsonify({"message": "Username/Email already exists"}), 400)
 
+class LoginEndpoint(BaseAuthEndpoint):
+    """ This endpoints handles all login posts  POST /login"""
+
+    def post(self):
+        """ Accepts login credentials and return success on succcessful authentication"""
+
+        data = request.get_json(force=True)
+        user_data, error = UserSchema(
+            only=('username', 'password')).load(data)
+        if error:
+            return make_response(jsonify({
+                "message": "Missing or invalid field members",
+                "required": error}), 400)
+
+        result = self.u.get_user(user_data['username'])
+       
+        if result == False:
+            return make_response(jsonify({"message": "Login Failed, User does not exist!"}), 401)
+
+        if self.u.check_encrypted_password(user_data['password'], result['password']):
+            return make_response(jsonify({"message": "Login Success!"}), 200)
+
+        return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
