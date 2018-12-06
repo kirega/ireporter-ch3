@@ -86,7 +86,7 @@ class Incident():
         except psycopg2.ProgrammingError:
             return False
         else:
-            return self.curr.fetchall()
+            return self.curr.fetchone()
 
     def get_incidents(self,createdBy):
         try: 
@@ -97,4 +97,31 @@ class Incident():
         else:
             return self.curr.fetchall()
 
-    
+    def validate_edit(self,incidentId,createdBy):
+        try: 
+            self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s AND id = %s AND status = %s ;",
+            (createdBy,incidentId,"draft",))
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            return self.curr.fetchone()
+
+    def edit_comment(self, incidentId, comment, createdBy):
+        try: 
+            self.curr.execute("UPDATE public.\"Incident\" SET comment = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
+            (comment,createdBy,incidentId,'draft',))
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            self.db.commit()
+            return True
+
+    def edit_location(self, incidentId, location, createdBy):
+        try: 
+            self.curr.execute("UPDATE public.\"Incident\" SET location = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
+            (location,createdBy,incidentId,'draft',))
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            self.db.commit()
+            return True
