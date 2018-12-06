@@ -26,15 +26,15 @@ def tables():
 
     table2 = """CREATE TABLE IF NOT EXISTS "Incident"
     (   id serial PRIMARY KEY,
-        user_id INTEGER,
+        createdBy INTEGER,
         comment varchar(255) NOT NULL,
         incidentType varchar(25) check(incidentType in ('red-flag', 'intervention')),
         location varchar(50),
         status varchar(50) DEFAULT 'draft' check(status in ('draft','under-investigation','resolved','rejected')),
-        images bytea,
-        videos bytea,
+        images text[],
+        videos text[],
         createdOn timestamp DEFAULT now(),
-        FOREIGN KEY (user_id) REFERENCES public."User" (id)
+        FOREIGN KEY (createdBy) REFERENCES public."User" (id)
     );"""
     table_queries = [table1, table2]
     return table_queries
