@@ -19,7 +19,7 @@ class User ():
 
         try:
             self.curr.execute("INSERT INTO public.\"User\" (first_name,last_name,other_names,phonenumber, \
-                            username, email, password, isAdmin) values (%s,%s,%s,%s,%s,%s,%s,%s)",
+                            username, email, password, isAdmin) values (%s,%s,%s,%s,%s,%s,%s,%s);",
                             (first_name,last_name,other_names,phonenumber,username,email,password,isAdmin))
         except psycopg2.IntegrityError :
             return False
@@ -29,7 +29,7 @@ class User ():
     
     def get_user(self,username):
         try:
-            self.curr.execute("SELECT * FROM public.\"User\" WHERE username = %s",
+            self.curr.execute("SELECT * FROM public.\"User\" WHERE username = %s;",
             [username])
         except psycopg2.ProgrammingError: 
             return False
@@ -47,10 +47,27 @@ class User ():
 class Incident():
     def __init__(self):
         self.db = init_db()
-    def save(self):
-        pass
+        self.curr = self.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def save(self,incidentType, comment, location, createdBy, images, videos):
+        try:
+            self.curr.execute("INSERT INTO public.\"Incident\" (createdby,comment,incidenttype,location, \
+                            images, videos) values (%s,%s,%s,%s,%s,%s);",
+                            (createdBy,comment,incidentType,location,images,videos))
+        except psycopg2.IntegrityError :
+            return False
+        else:
+            self.db.commit()
+            return True
+
     def get_incident(self):
         pass
     def get_incidents(self):
-        pass
+        try: 
+            self.curr.execute("SELECT * FROM public.\"Incident\";")
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            return self.curr.fetchone()
+
     

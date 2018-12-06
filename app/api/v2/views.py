@@ -8,16 +8,16 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required)
 from flask_restful import Resource
 
-from .models import User
+from .models import User, Incident
 from .validators import IncidentEditSchema, IncidentSchema, UserSchema
 
 
-class BaseAuthEndpoint(Resource):
+class BaseEndpoint(Resource):
     def __init__(self):
         self.u = User()
+        self.i = Incident()
 
-
-class SignUpEndpoint(BaseAuthEndpoint):
+class SignUpEndpoint(BaseEndpoint):
     """
     A resource that provides the endpoint POST /signup.
 
@@ -54,7 +54,7 @@ class SignUpEndpoint(BaseAuthEndpoint):
         
         return make_response(jsonify({"message": "Username/Email already exists"}), 400)
 
-class LoginEndpoint(BaseAuthEndpoint):
+class LoginEndpoint(BaseEndpoint):
     """ This endpoints handles all login posts  POST /login"""
 
     def post(self):
@@ -76,7 +76,7 @@ class LoginEndpoint(BaseAuthEndpoint):
         if self.u.check_encrypted_password(user_data['password'], result['password']):
             return make_response(jsonify({
                 "message": "Login Success!",
-                "refresh_token": create_refresh_token(identity=user_data["username"])}), 200)
+                "access_token": create_access_token(identity=user_data["username"])}), 200)
 
         return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
 
@@ -91,3 +91,43 @@ class RefreshTokenEndpoint(Resource):
             'message':"New access token created",
             'access_token': access_token}),
             201)
+
+class AllIncidentsEndpoint(BaseEndpoint):
+    """Allows for getting all incidents and posting of any new one"""
+
+    @jwt_required
+    def post(self):
+        data = request.get_json(force=True)
+        incident_data, error = IncidentSchema(
+            only=('incidentType','location','comment','images','videos')
+        ).load(data)
+        if error:
+            return make_response(jsonify({
+                "message": "Missing or invalid field members",
+                "required": error}), 400)
+
+        user = get_jwt_identity()
+        createdBy = self.u.get_user(user)['id']
+        success = self.i.save(
+            incident_data['incidentType'],
+            incident_data['comment'],
+            incident_data['location'],
+            createdBy,
+            incident_data['images'],
+            incident_data['videos'],
+            )
+        if success:
+            return make_response(jsonify({
+                "message": "New incident created"}
+                ), 201)
+
+        return make_response(jsonify({"message": "Not Authorized"}), 401)
+                
+        # result = self.u.get_user(incident_data['username'])
+        # if self.user.search_user(incident_data['createdBy']):
+        #     new_incident = self.db.save(data['incidentType'], data["comment"], data['location'],
+        #                                 data['createdBy'], data['images'], data['videos'])
+        #     return make_response(jsonify({"message": "New incident created",
+        #                                   "data": new_incident}), 201)
+
+        # return make_response(jsonify({"message": "Not Authorized"}), 401)
