@@ -50,7 +50,7 @@ class User ():
 class Incident():
     def __init__(self):
         self.db = init_db()
-        self.curr = self.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.curr = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     @staticmethod
     def convert(s):

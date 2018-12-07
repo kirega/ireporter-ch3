@@ -159,7 +159,7 @@ class IncidentEndpoint(BaseEndpoint):
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
         if results == False or results is None:
-            return make_response(jsonify({"message": "No incident by that id"}))
+            return make_response(jsonify({"message": "No incident by that id"}), 404)
         return make_response(jsonify(results), 200)
 
     @jwt_required
