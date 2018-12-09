@@ -78,7 +78,7 @@ class FlaskUserTest(BaseTestCase):
             '/api/v2/login', data=self.nonexisting_user)
         self.assertEqual(result.status_code, 401)
         data = json.loads(result.data)
-        self.assertEqual(data['message'], "Login Failed, User does not exist!")
+        self.assertEqual(data['message'], "Login Failed, Incorrect Username/Password!")
 
     def test_8_login_with_wrong_pwd(self):
         """Test that a user providing correct credentials in is unable to login
@@ -87,7 +87,7 @@ class FlaskUserTest(BaseTestCase):
             '/api/v2/login', data=self.wrong_pwd)
         self.assertEqual(result.status_code, 401)
         data = json.loads(result.data)
-        self.assertEqual(data['message'], "Login Failed! Invalid Password")
+        self.assertEqual(data['message'], "Login Failed, Incorrect Username/Password!")
 
 if __name__ == '__main__':
     unittest.main()
