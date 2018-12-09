@@ -14,7 +14,7 @@ class User ():
         self.curr = self.db.cursor(cursor_factory=DictCursor)
 
     def save(self, first_name, last_name, other_names, phonenumber,
-            email, username, password, isAdmin=False):
+             email, username, password, isAdmin=False):
         """Method to save a new instance into the userdb"""
 
         password = self.encrypt_password(password)
@@ -22,7 +22,9 @@ class User ():
         try:
             self.curr.execute("INSERT INTO public.\"User\" (first_name,last_name,other_names,phonenumber, \
                             username, email, password, isAdmin) values (%s,%s,%s,%s,%s,%s,%s,%s);",
-                            (first_name, last_name, other_names, phonenumber, username, email, password, isAdmin))
+                              (first_name, last_name, other_names, phonenumber, username, email, password, isAdmin))
+        except psycopg2.ProgrammingError:
+            return False
         except psycopg2.IntegrityError:
             return False
         else:
@@ -32,7 +34,7 @@ class User ():
     def get_user(self, username):
         try:
             self.curr.execute("SELECT * FROM public.\"User\" WHERE username = %s;",
-            [username])
+                              [username])
         except psycopg2.ProgrammingError:
             return False
         else:
@@ -50,66 +52,68 @@ class User ():
 class Incident():
     def __init__(self):
         self.db = init_db()
-        self.curr = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        self.curr = self.db.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor)
 
     @staticmethod
     def convert(s):
-        if isinstance(s,datetime.datetime):
+        if isinstance(s, datetime.datetime):
             return s.__str__()
 
-    def save(self,incidentType, comment, location, createdBy, images, videos):
+    def save(self, incidentType, comment, location, createdBy, images, videos):
         try:
             self.curr.execute("INSERT INTO public.\"Incident\" (createdby,comment,incidenttype,location, \
                             images, videos) values (%s,%s,%s,%s,%s,%s);",
-                            (createdBy,comment,incidentType,location,images,videos))
-        except psycopg2.IntegrityError :
+                              (createdBy, comment, incidentType, location, images, videos))
+        except psycopg2.IntegrityError:
+            return False
+        except psycopg2.IntegrityError:
             return False
         else:
             self.db.commit()
             return True
 
-    def delete(self,incidentId,createdBy):
-        try: 
+    def delete(self, incidentId, createdBy):
+        try:
             self.curr.execute("DELETE FROM public.\"Incident\" WHERE createdBy = %s AND id = %s ;",
-            (createdBy,incidentId,))
+                              (createdBy, incidentId,))
         except psycopg2.ProgrammingError:
             return False
         else:
             self.db.commit()
             return True
-            
 
-    def get_incident(self,incidentId,createdBy):
-        try: 
+    def get_incident(self, incidentId, createdBy):
+        try:
             self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s AND id = %s ;",
-            (createdBy,incidentId,))
+                              (createdBy, incidentId,))
         except psycopg2.ProgrammingError:
             return False
         else:
             return self.curr.fetchone()
 
-    def get_incidents(self,createdBy):
-        try: 
+    def get_incidents(self, createdBy):
+        try:
             self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s ;",
-            [createdBy])
+                              [createdBy])
         except psycopg2.ProgrammingError:
             return False
         else:
             return self.curr.fetchall()
 
-    def validate_edit(self,incidentId,createdBy):
-        try: 
+    def validate_edit(self, incidentId, createdBy):
+        try:
             self.curr.execute("SELECT * FROM public.\"Incident\" WHERE createdBy = %s AND id = %s AND status = %s ;",
-            (createdBy,incidentId,"draft",))
+                              (createdBy, incidentId, "draft",))
         except psycopg2.ProgrammingError:
             return False
         else:
             return self.curr.fetchone()
 
     def edit_comment(self, incidentId, comment, createdBy):
-        try: 
+        try:
             self.curr.execute("UPDATE public.\"Incident\" SET comment = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
-            (comment,createdBy,incidentId,'draft',))
+                              (comment, createdBy, incidentId, 'draft',))
         except psycopg2.ProgrammingError:
             return False
         else:
@@ -117,10 +121,23 @@ class Incident():
             return True
 
     def edit_location(self, incidentId, location, createdBy):
-        try: 
+        try:
             self.curr.execute("UPDATE public.\"Incident\" SET location = %s WHERE createdBy = %s AND id = %s AND status = %s ;",
-            (location,createdBy,incidentId,'draft',))
+                              (location, createdBy, incidentId, 'draft',))
         except psycopg2.ProgrammingError:
+            return False
+        else:
+            self.db.commit()
+            return True
+
+    def update_status(self, incidentId, status):
+        """Updates the status of a record"""
+        try:
+            self.curr.execute("UPDATE public.\"Incident\" SET status = %s WHERE id = %s;",
+                              (status, incidentId,))
+        except psycopg2.ProgrammingError:
+            return False
+        except psycopg2.IntegrityError:
             return False
         else:
             self.db.commit()
