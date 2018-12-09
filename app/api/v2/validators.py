@@ -45,3 +45,4 @@ class IncidentEditSchema(Schema):
     userid = fields.Int(required=True)
     comment = fields.Str(required=True)
     location = fields.Str(required=True)
+    status = fields.Str(required=True)
