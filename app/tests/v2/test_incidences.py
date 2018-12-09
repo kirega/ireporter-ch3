@@ -163,20 +163,37 @@ class IncidentDeleteTestCase(BaseTestCase):
             "other_names": "Kirega",
             "phonenumber": "0716570355",
             "email": "joseph.mutiga934@gmail.com",
-            "username": "Joe",
+            "username": "KiregaJ",
             "password": "123456"
         })
+
+        self.admin_signup_data = json.dumps({
+            "first_name": "John",
+            "last_name": "Murio",
+            "other_names": "K",
+            "phonenumber": "0716570522",
+            "email": "john.murio97@gmail.com",
+            "username": "Murio",
+            "password": "4321",
+            "isAdmin": True
+        })
         self.login_data = json.dumps(
-            {"username": "Joe", "password": "123456"})
+            {"username": "KiregaJ", "password": "123456"})
+        self.admin_data = json.dumps(
+            {"username": "Murio", "password": "4321"})
         self.app.post('/api/v2/signup', data=self.user_signup_data)
         result = self.app.post('/api/v2/login', data=self.login_data)
         self.token = json.loads(result.data)['access_token']
         self.refresh_token = json.loads(result.data)['refresh_token']
         self.app.post('/api/v2/incidents',
-                    data=self.new_incident_data,
-                    headers=dict(Authorization="Bearer " + self.token))
-
-    def test_11_update_an_incident_location(self):
+                      data=self.new_incident_data,
+                      headers=dict(Authorization="Bearer " + self.token))
+        self.app.post('/api/v2/signup', data=self.admin_signup_data)
+        admin_result = self.app.post('/api/v2/login', data=self.admin_data)
+        self.admin_token = json.loads(admin_result.data)['access_token']
+        
+    def test_1_update_an_incident_location(self):
+        """Test delete works successfully on an incident"""
         data = json.dumps({"location": "1.3242, -53.3"})
         result = self.app.put('/api/v2/incident/1/location',
                               data=data,
@@ -185,24 +202,72 @@ class IncidentDeleteTestCase(BaseTestCase):
         data = json.loads(result.data)
         self.assertEqual(data['message'], "Incident Updated")
 
-    def test_12_delete_incident(self):
+    def test_2_admin_can_change_status(self):
+        """Test admin can update the status of an incident"""
+        data = json.dumps({"status": "resolved"})
+        result = self.app.put('/api/v2/incident/1/status',
+                              data=data,
+                              headers=dict(Authorization="Bearer " + self.admin_token))
+        self.assertEqual(result.status_code, 200)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "Incident status updated")
+
+    def test_3_admin_bad_status_update(self):
+        """Test admin cannot update the status of an incident with an
+           invalid status
+        """
+        data = json.dumps({"status": "resolve dfds"})
+        result = self.app.put('/api/v2/incident/1/status',
+                              data=data,
+                              headers=dict(Authorization="Bearer " + self.admin_token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'],
+                         "Status can only be draft,under-investigation,resolved or rejected")
+
+    def test_4_status_update_with_non_admin(self):
+        """Test non_admin cannot update the status of an incident 
+        """
+        data = json.dumps({"status": "resolved"})
+        result = self.app.put('/api/v2/incident/1/status',
+                              data=data,
+                              headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 401)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "Incident does not exist/ Not Admin")
+
+    def test_5_status_update_with_bad_format(self):
+        """Test status fails for empty payloads/ bad formats
+        """
+        data = json.dumps({"statuds": "resolved"})
+        result = self.app.put('/api/v2/incident/1/status',
+                              data=data,
+                              headers=dict(Authorization="Bearer " + self.admin_token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "status is not present")
+
+    def test_6_delete_incident(self):
+        """Test delete works successfully on an incident"""
         result = self.app.delete('/api/v2/incident/1',
-                                headers=(dict(Authorization="Bearer " + self.token)))
+                                 headers=(dict(Authorization="Bearer " + self.token)))
         data = json.loads(result.data)
         self.assertEqual(data["status"], 200)
         self.assertEqual(data['message'], "Incident record has been deleted")
 
-    def test_13_delete_nonexisting_incident(self):
+    def test_7_delete_nonexisting_incident(self):
+        """Test delete for a non-existing incident fails"""
         result = self.app.delete('/api/v2/incident/1000',
-                                headers=(dict(Authorization="Bearer " + self.token)))
+                                 headers=(dict(Authorization="Bearer " + self.token)))
         data = json.loads(result.data)
         self.assertEqual(result.status_code, 403)
         self.assertEqual(
             data['message'], "Forbiden cannot delete,record may not exist")
 
-    def test_refresh_token(self):
+    def test_8_refresh_token(self):
+        """Test success in creating a new token"""
         result = self.app.post('/api/v2/token',
-                            headers=dict(Authorization="Bearer " + self.refresh_token))
+                               headers=dict(Authorization="Bearer " + self.refresh_token))
         self.assertEqual(result.status_code, 201)
         data = json.loads(result.data)
         self.assertEqual(data['message'], "New access token created")
