@@ -48,11 +48,8 @@ class SignUpEndpoint(BaseEndpoint):
         )
         if success:
             return make_response(jsonify({
-                "message": "Sign Up successful. Welcome!",
-                "refresh_token": create_refresh_token(identity=user_data["username"]),
-                "access_token": create_access_token(identity=user_data["username"])}
-            ),
-                201)
+                "message": "Sign Up successful. Welcome!"}
+            ), 201)
 
         return make_response(jsonify({"message": "Username/Email already exists"}), 400)
 
@@ -74,14 +71,15 @@ class LoginEndpoint(BaseEndpoint):
         result = self.u.get_user(user_data['username'])
 
         if result == False or result == None:
-            return make_response(jsonify({"message": "Login Failed, User does not exist!"}), 401)
+            return make_response(jsonify({"message": "Login Failed, Incorrect Username/Password!"}), 401)
 
         if self.u.check_encrypted_password(user_data['password'], result['password']):
             return make_response(jsonify({
                 "message": "Login Success!",
-                "access_token": create_access_token(identity=user_data["username"])}), 200)
+                "refresh_token": create_refresh_token(identity=user_data["username"]),
+                "access_token": create_access_token(identity=user_data["username"], expires_delta=False)}), 200)
 
-        return make_response(jsonify({"message": "Login Failed! Invalid Password"}), 401)
+        return make_response(jsonify({"message": "Login Failed, Incorrect Username/Password!"}), 401)
 
 
 class RefreshTokenEndpoint(Resource):
@@ -129,10 +127,8 @@ class AllIncidentsEndpoint(BaseEndpoint):
                 "message": "New incident created"}
             ), 201)
 
-    @staticmethod
-    def convert(s):
-        if isinstance(s, datetime.datetime):
-            return s.__str__()
+        return make_response(jsonify({
+            "message": "Cannot create the record at the moment"}), 200)
 
     @jwt_required
     def get(self):
@@ -159,7 +155,7 @@ class IncidentEndpoint(BaseEndpoint):
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
         if results == False or results is None:
-            return make_response(jsonify({"message": "No incident by that id"}), 404)
+            return make_response(jsonify({"message": "No incident by that id/ Not owned"}), 404)
         return make_response(jsonify(results), 200)
 
     @jwt_required
@@ -180,13 +176,13 @@ class IncidentEndpoint(BaseEndpoint):
         if result:
             return make_response(jsonify({
                 "message": "Incident record has been deleted",
-                "status": 204}
+                "status": 200}
             ), 200)
 
 
 class IncidentEditCommentEndpoint(BaseEndpoint):
     """
-    Enpoint PUT /incident/1
+    Endpoint PUT /incident/1/comment
     Allows for editing the comment on an incident
     """
     @jwt_required
@@ -206,7 +202,7 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
 
         exists_owned = self.i.validate_edit(incidentId, createdBy)
 
-        if exists_owned is None or exists_owned == False:
+        if exists_owned == False or exists_owned is None:
             return make_response(jsonify({
                 "message": "Forbidden: Record not owned/ Not in draft status"}), 403)
 
@@ -222,7 +218,7 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
 
 class IncidentEditLocationEndpoint(BaseEndpoint):
     """
-    Enpoint PUT /incident/1
+    Endpoint PUT /incident/1/location
     Allows for editing the location on an incident
     """
     @jwt_required
@@ -236,13 +232,13 @@ class IncidentEditLocationEndpoint(BaseEndpoint):
             only=('location',)).load(data)
         if incident_data.errors:
             return make_response(jsonify({
-                "message": "location/userid is not present",
+                "message": "location is not present",
                 "required": incident_data.errors}),
                 400)
 
         exists_owned = self.i.validate_edit(incidentId, createdBy)
 
-        if exists_owned is None or exists_owned == False:
+        if exists_owned == False or exists_owned is None:
             return make_response(jsonify({
                 "message": "Forbidden: Record not owned/ Not in draft status"}), 403)
 

@@ -28,6 +28,6 @@ def method_not_allowed(err):
     return make_response(jsonify(
         {
             "status": 405,
-            "message": "Method is not allowed on this endpoint"
+            "message": "Method is not allowed"
         }
     ), 405)
