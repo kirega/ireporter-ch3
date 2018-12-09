@@ -36,16 +36,28 @@ class SignUpEndpoint(BaseEndpoint):
             return make_response(jsonify({
                 "message": "Missing or invalid field members",
                 "required": error}), 400)
-
-        success = self.u.save(
-            user_data["first_name"],
-            user_data["last_name"],
-            user_data["other_names"],
-            user_data["phonenumber"],
-            user_data["email"],
-            user_data["username"],
-            user_data["password"]
-        )
+                
+        if 'isAdmin' in user_data:
+            success = self.u.save(
+                user_data["first_name"],
+                user_data["last_name"],
+                user_data["other_names"],
+                user_data["phonenumber"],
+                user_data["email"],
+                user_data["username"],
+                user_data["password"],
+                user_data["isAdmin"]
+            )   
+        else:
+            success = self.u.save(
+                user_data["first_name"],
+                user_data["last_name"],
+                user_data["other_names"],
+                user_data["phonenumber"],
+                user_data["email"],
+                user_data["username"],
+                user_data["password"]
+            )
         if success:
             return make_response(jsonify({
                 "message": "Sign Up successful. Welcome!"}
@@ -128,7 +140,7 @@ class AllIncidentsEndpoint(BaseEndpoint):
             ), 201)
 
         return make_response(jsonify({
-            "message": "Cannot create the record at the moment"}), 200)
+            "message": "Incident can only be red-flag/intervention"}), 400)
 
     @jwt_required
     def get(self):
@@ -250,3 +262,39 @@ class IncidentEditLocationEndpoint(BaseEndpoint):
 
         return make_response(jsonify({
             "message": "Cannot update a record at the moment"}), 403)
+
+class AdminStatusEndpoint(BaseEndpoint):
+
+    """
+    Endpoint PUT /incident/status
+    Allows for and admin to update the status of a record
+    """
+    @jwt_required
+    def put(self,incidentId):
+        data = request.get_json(force=True)
+        incident_data = IncidentEditSchema(
+            only=('status',)).load(data)
+        
+        if incident_data.errors:
+            return make_response(jsonify({
+            "message": "status is not present",
+            "required": incident_data.errors}),
+            400)
+        user = get_jwt_identity()
+        
+        isAdmin = self.u.get_user(user)['isadmin']
+        
+        if isAdmin == True:
+            update = self.i.update_status(incidentId,data['status'])
+        else:
+            return make_response(jsonify({
+                "message": "Incident does not exist/ Not Admin"
+            }), 401)
+        
+        if update == True:
+            return make_response(jsonify({
+                'message':'Incident status updated'}),
+                200)
+        return make_response(jsonify({
+            "message" : "Status can only be draft,under-investigation,resolved or rejected",
+        }), 400)
