@@ -9,7 +9,12 @@ def validate_string(s):
 
     if not s.strip():
         raise ValidationError('Empty string invalid')
-
+def password_strength(s):
+    """
+    Utility function for password strength
+    """
+    if len(s) < 8:
+        raise ValidationError('Password must be more than 8 characters long')
 
 class IncidentSchema(Schema):
     """Incident Schema for validation"""
@@ -35,7 +40,7 @@ class UserSchema(Schema):
     phonenumber = fields.Str(required=True, validate=validate_string)
     username = fields.Str(required=True, validate=validate_string)
     email = fields.Email(required=True)
-    password = fields.Str(required=True, validate=validate_string)
+    password = fields.Str(required=True, validate=[validate_string, password_strength])
     isAdmin = fields.Bool()
     registeredOn = fields.DateTime()
 
