@@ -38,10 +38,10 @@ class IncidentTestCase(BaseTestCase):
             "phonenumber": "0716570355",
             "email": "joseph.mutiga934@gmail.com",
             "username": "Joe",
-            "password": "123456"
+            "password": "123456990"
         })
         self.login_data = json.dumps(
-            {"username": "Joe", "password": "123456"})
+            {"username": "Joe", "password": "123456990"})
         self.app.post('/api/v2/signup', data=self.user_signup_data)
         result = self.app.post('/api/v2/login', data=self.login_data)
         self.token = json.loads(result.data)['access_token']
@@ -164,7 +164,7 @@ class IncidentDeleteTestCase(BaseTestCase):
             "phonenumber": "0716570355",
             "email": "joseph.mutiga934@gmail.com",
             "username": "KiregaJ",
-            "password": "123456"
+            "password": "123456789"
         })
 
         self.admin_signup_data = json.dumps({
@@ -174,13 +174,13 @@ class IncidentDeleteTestCase(BaseTestCase):
             "phonenumber": "0716570522",
             "email": "john.murio97@gmail.com",
             "username": "Murio",
-            "password": "4321",
+            "password": "432189900",
             "isAdmin": True
         })
         self.login_data = json.dumps(
-            {"username": "KiregaJ", "password": "123456"})
+            {"username": "KiregaJ", "password": "123456789"})
         self.admin_data = json.dumps(
-            {"username": "Murio", "password": "4321"})
+            {"username": "Murio", "password": "432189900"})
         self.app.post('/api/v2/signup', data=self.user_signup_data)
         result = self.app.post('/api/v2/login', data=self.login_data)
         self.token = json.loads(result.data)['access_token']
