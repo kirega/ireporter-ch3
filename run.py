@@ -1,6 +1,8 @@
 from app import create_app
 from instance.config import settings
 from flask import make_response, jsonify
+from flask_jwt_extended import JWTManager
+
 app =  create_app(settings['testing'])
 
 if __name__ == '__main__':
@@ -33,3 +35,19 @@ def server_error(err):
             "message": "Server error encountered"
         }
     ), 405)
+
+jwt =  JWTManager(app)
+
+@jwt.expired_token_loader
+def expired_token_callback():
+    return make_response(jsonify({
+        'status': 401,
+        'message': 'The token has expired'
+    }), 401)
+
+@jwt.invalid_token_loader
+def invalid_token_callback(p):
+    return make_response(jsonify({
+        'status': 401,
+        'message': 'The token entered is invalid'
+    }), 401)
