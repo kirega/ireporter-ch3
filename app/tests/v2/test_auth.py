@@ -16,14 +16,14 @@ class FlaskUserTest(BaseTestCase):
             "phonenumber": "0716570355",
             "email": "joseph.mutiga934@gmail.com",
             "username": "kirega",
-            "password": "1234"
+            "password": "mtumkubwa"
         })
         self.login_data = json.dumps(
-            {"username": "kirega", "password": "1234"})
+            {"username": "kirega", "password": "mtumkubwa"})
         self.wrong_login_data_format = json.dumps(
-            {"username_ndfsame": "kirega", "password": "1234"})
-        self.nonexisting_user = json.dumps({"username": "Tyron", "password": "1234"})
-        self.wrong_pwd = json.dumps({"username": "kirega", "password": "123dss4"})
+            {"username_ndfsame": "kirega", "password": "mtumkubwa"})
+        self.nonexisting_user = json.dumps({"username": "Tyron", "password": "mtumkubwa"})
+        self.wrong_pwd = json.dumps({"username": "kirega", "password": "4dfsjkdskfjsk"})
 
     def test_1_user_can_signup(self):
         "Test that by posting user data to the endpoint, it gets created"

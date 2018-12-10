@@ -162,7 +162,11 @@ class IncidentEndpoint(BaseEndpoint):
         GET /incident/<incidentId>
         Returns a single instance
         """
-
+        try:
+            incidentId = int(incidentId)
+        except ValueError:
+            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
+            
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
@@ -176,6 +180,11 @@ class IncidentEndpoint(BaseEndpoint):
         DELETE /incident/<incidentId>
         deletes a single instance
         """
+        try:
+            incidentId = int(incidentId)
+        except ValueError:
+            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
+            
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         exists_owned = self.i.get_incident(incidentId, createdBy)
@@ -200,7 +209,11 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
     @jwt_required
     def put(self, incidentId):
         """Allows for editing the comment on an incident"""
-
+        try:
+            incidentId = int(incidentId)
+        except ValueError:
+            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
+            
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         data = request.get_json(force=True)
@@ -236,7 +249,10 @@ class IncidentEditLocationEndpoint(BaseEndpoint):
     @jwt_required
     def put(self, incidentId):
         """  Allows for editing the location on an incident"""
-
+        try:
+            incidentId = int(incidentId)
+        except ValueError:
+            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         data = request.get_json(force=True)
@@ -271,6 +287,10 @@ class AdminStatusEndpoint(BaseEndpoint):
     """
     @jwt_required
     def put(self,incidentId):
+        try:
+            incidentId = int(incidentId)
+        except ValueError:
+            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
         data = request.get_json(force=True)
         incident_data = IncidentEditSchema(
             only=('status',)).load(data)
