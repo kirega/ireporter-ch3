@@ -6,6 +6,8 @@ import unittest
 class FlaskUserTest(BaseTestCase):
     """
         This class will cover all API endpoints for authentication
+        The tests are ordered in the order of execution to enable for simple and easy of
+        temporary test structures during the test.
     """
 
     def setUp(self):
@@ -22,8 +24,10 @@ class FlaskUserTest(BaseTestCase):
             {"username": "kirega", "password": "mtumkubwa"})
         self.wrong_login_data_format = json.dumps(
             {"username_ndfsame": "kirega", "password": "mtumkubwa"})
-        self.nonexisting_user = json.dumps({"username": "Tyron", "password": "mtumkubwa"})
-        self.wrong_pwd = json.dumps({"username": "kirega", "password": "4dfsjkdskfjsk"})
+        self.nonexisting_user = json.dumps(
+            {"username": "Tyron", "password": "mtumkubwa"})
+        self.wrong_pwd = json.dumps(
+            {"username": "kirega", "password": "4dfsjkdskfjsk"})
 
     def test_1_user_can_signup(self):
         "Test that by posting user data to the endpoint, it gets created"
@@ -78,7 +82,8 @@ class FlaskUserTest(BaseTestCase):
             '/api/v2/login', data=self.nonexisting_user)
         self.assertEqual(result.status_code, 401)
         data = json.loads(result.data)
-        self.assertEqual(data['message'], "Login Failed, Incorrect Username/Password!")
+        self.assertEqual(
+            data['message'], "Login Failed, Incorrect Username/Password!")
 
     def test_8_login_with_wrong_pwd(self):
         """Test that a user providing correct credentials in is unable to login
@@ -87,7 +92,19 @@ class FlaskUserTest(BaseTestCase):
             '/api/v2/login', data=self.wrong_pwd)
         self.assertEqual(result.status_code, 401)
         data = json.loads(result.data)
-        self.assertEqual(data['message'], "Login Failed, Incorrect Username/Password!")
+        self.assertEqual(
+            data['message'], "Login Failed, Incorrect Username/Password!")
+            
+    def test_9_logout(self):
+        """Tests that the user can logout successfuly"""
+        r  = self.app.post('/api/v2/login', data=self.login_data)
+        token =  json.loads(r.data)['access_token']
+        result = self.app.post('/api/v2/logout',
+                               headers=dict(Authorization='Bearer ' + token))
+        self.assertEqual(result.status_code, 200)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "Successfully logged out!")
+    
 
 if __name__ == '__main__':
     unittest.main()
