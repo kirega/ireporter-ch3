@@ -172,11 +172,13 @@ class RevokeToken():
         Finds to see if a jwt has been blacklisted.
         """
         try:
-            present = self.curr.execute("SELECT * FROM public.\"RevokeToken\" \
+            self.curr.execute("SELECT * FROM public.\"RevokeToken\" \
                         WHERE jti = %s", (jti,))
+
         except psycopg2.DatabaseError:
             return False
-        finally:
-            if present is None:
+        else:
+            present = self.curr.fetchall()
+            if present is None or len(present) < 1:
                 return False
             return True

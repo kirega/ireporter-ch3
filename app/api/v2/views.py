@@ -104,6 +104,7 @@ class LogoutEndpoint(BaseEndpoint):
                 "message": "Successfully logged out!"
             }), 200)
 
+
 class RefreshTokenEndpoint(Resource):
     """Returns the a new refresh token"""
 

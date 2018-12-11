@@ -40,7 +40,7 @@ def tables():
 
     table3 = """CREATE TABLE IF NOT EXISTS "RevokeToken"
     ( id serial PRIMARY KEY,
-      jti varchar(255) NOT NULL);
+      jti varchar(255) UNIQUE);
     """
     table_queries = [table1, table2, table3]
     return table_queries
