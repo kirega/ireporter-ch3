@@ -36,7 +36,12 @@ def tables():
         createdOn timestamp DEFAULT now(),
         FOREIGN KEY (createdBy) REFERENCES public."User" (id)
     );"""
-    table_queries = [table1, table2]
+
+    table3 = """CREATE TABLE IF NOT EXISTS "revoked_token"
+    ( id serial PRIMARY KEY,
+      comment varchar(255) NOT NULL);
+    """
+    table_queries = [table1, table2, table3]
     return table_queries
 
 
