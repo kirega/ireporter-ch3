@@ -38,9 +38,9 @@ def tables():
         FOREIGN KEY (createdBy) REFERENCES public."User" (id)
     );"""
 
-    table3 = """CREATE TABLE IF NOT EXISTS "revoked_token"
+    table3 = """CREATE TABLE IF NOT EXISTS "RevokeToken"
     ( id serial PRIMARY KEY,
-      comment varchar(255) NOT NULL);
+      jti varchar(255) NOT NULL);
     """
     table_queries = [table1, table2, table3]
     return table_queries
