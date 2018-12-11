@@ -6,10 +6,10 @@ import json
 from flask import jsonify, make_response, request
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt_identity, jwt_refresh_token_required,
-                                jwt_required)
+                                jwt_required, get_raw_jwt)
 from flask_restful import Resource
 
-from .models import User, Incident
+from .models import User, Incident, RevokeToken
 from .validators import IncidentEditSchema, IncidentSchema, UserSchema
 
 
@@ -93,6 +93,16 @@ class LoginEndpoint(BaseEndpoint):
 
         return make_response(jsonify({"message": "Login Failed, Incorrect Username/Password!"}), 401)
 
+
+class LogoutEndpoint(BaseEndpoint):
+    """ This endpoint handles User logout and blacklisting of that access token"""
+    @jwt_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        if RevokeToken().add(jti):
+            return make_response(jsonify({
+                "message": "Successfully logged out!"
+            }), 200)
 
 class RefreshTokenEndpoint(Resource):
     """Returns the a new refresh token"""

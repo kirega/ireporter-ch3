@@ -3,13 +3,15 @@ from flask_restful import Api
 from .views import (SignUpEndpoint, LoginEndpoint,
                     RefreshTokenEndpoint, AllIncidentsEndpoint,
                     IncidentEndpoint, IncidentEditCommentEndpoint,
-                    IncidentEditLocationEndpoint, AdminStatusEndpoint)
+                    IncidentEditLocationEndpoint, AdminStatusEndpoint,
+                    LogoutEndpoint)
 
 v2 = Blueprint('api', __name__, url_prefix='/api/v2')
 api = Api(v2)
 
 api.add_resource(SignUpEndpoint, '/signup')
 api.add_resource(LoginEndpoint, '/login')
+api.add_resource(LogoutEndpoint, '/logout')
 api.add_resource(AllIncidentsEndpoint, '/incidents')
 api.add_resource(IncidentEndpoint, '/incident/<incidentId>')
 api.add_resource(IncidentEditCommentEndpoint, '/incident/<incidentId>/comment')
