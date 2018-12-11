@@ -19,6 +19,12 @@ def create_app(config):
     def check_if_in_blacklist(decrypt_token):
         jwt_token_id = decrypt_token['jti']
         return RevokeToken().is_jwt_blacklisted(jwt_token_id)
+    @jwt.revoked_token_loader
+    def revoked_token_callback():
+        return make_response(jsonify({
+            "message": "Token has been revoked",
+            "status": 401
+        }),401)
 
     @jwt.expired_token_loader
     def expired_token_callback():

@@ -94,17 +94,21 @@ class FlaskUserTest(BaseTestCase):
         data = json.loads(result.data)
         self.assertEqual(
             data['message'], "Login Failed, Incorrect Username/Password!")
-            
+
     def test_9_logout(self):
         """Tests that the user can logout successfuly"""
-        r  = self.app.post('/api/v2/login', data=self.login_data)
-        token =  json.loads(r.data)['access_token']
+        r = self.app.post('/api/v2/login', data=self.login_data)
+        token = json.loads(r.data)['access_token']
         result = self.app.post('/api/v2/logout',
                                headers=dict(Authorization='Bearer ' + token))
         self.assertEqual(result.status_code, 200)
         data = json.loads(result.data)
         self.assertEqual(data['message'], "Successfully logged out!")
-    
+        result = self.app.post('/api/v2/logout',
+                               headers=dict(Authorization='Bearer ' + token))
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "Token has been revoked")
+
 
 if __name__ == '__main__':
     unittest.main()
