@@ -39,11 +39,40 @@ To view this site : https://kirega.github.io/iReporter/
   ```
    $ git clone https://github.com/kirega/iReporter.git
   ```
+####Setup postgres server
+```
+    $ sudo apt install postgres
+```
+Create the database
+```
+    $ psql -c "CREATE DATABASE ireporter_test;" -U postgres
+```
+create a user for the database
+```
+    $ psql -c "CREATE USER test WITH PASSWORD 'test';" -U postgres
+```
+Grant the user all rights to the database:
+```
+    $ psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to test;" -U postgres
+```
 
+#### Create a .env file with the following
+```
+    source env/bin/activate
+    export FLASK_APP=run.py
+    export FLASK_DEBUG=1
+    export FLASK_ENV=development
+
+    export DB_HOST='localhost'
+    export DB_USERNAME='test'
+    export DB_PASS='test'
+    export DB_NAME='ireporter'
+    export DB_PORT='5432`'
+```
 #### **Create virtual environment & Activate.**
   ```
    $ virtualenv env -p python3
-   $ source env/bin/activate
+   $ source .env
    ```
 #### **Install Dependancies.**
   ```
@@ -52,15 +81,7 @@ To view this site : https://kirega.github.io/iReporter/
 
 #### **Run the app**
 ```
-(env)$ cd iReporter/
-```
-
-On Linux set the enviroment variables for the project
-```
-(env)$ export FLASK_APP=run.py
-(env)$ export FLASK_DEBUG=1
-(env)$ export FLASK_ENV=development
-(env)$ flask run
+(env)$ cd ireporter-ch3/
 ```
 
 #### **Run Tests**
