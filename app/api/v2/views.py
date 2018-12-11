@@ -36,7 +36,7 @@ class SignUpEndpoint(BaseEndpoint):
             return make_response(jsonify({
                 "message": "Missing or invalid field members",
                 "required": error}), 400)
-                
+
         if 'isAdmin' in user_data:
             success = self.u.save(
                 user_data["first_name"],
@@ -47,7 +47,7 @@ class SignUpEndpoint(BaseEndpoint):
                 user_data["username"],
                 user_data["password"],
                 user_data["isAdmin"]
-            )   
+            )
         else:
             success = self.u.save(
                 user_data["first_name"],
@@ -165,8 +165,8 @@ class IncidentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
-            
+            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
@@ -183,8 +183,8 @@ class IncidentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
-            
+            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         exists_owned = self.i.get_incident(incidentId, createdBy)
@@ -212,8 +212,8 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
-            
+            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         data = request.get_json(force=True)
@@ -252,7 +252,7 @@ class IncidentEditLocationEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
+            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         data = request.get_json(force=True)
@@ -279,6 +279,7 @@ class IncidentEditLocationEndpoint(BaseEndpoint):
         return make_response(jsonify({
             "message": "Cannot update a record at the moment"}), 403)
 
+
 class AdminStatusEndpoint(BaseEndpoint):
 
     """
@@ -286,35 +287,35 @@ class AdminStatusEndpoint(BaseEndpoint):
     Allows for and admin to update the status of a record
     """
     @jwt_required
-    def put(self,incidentId):
+    def put(self, incidentId):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message":"Failed! incidentId is not an id"}),400)
+            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
         data = request.get_json(force=True)
         incident_data = IncidentEditSchema(
             only=('status',)).load(data)
-        
+
         if incident_data.errors:
             return make_response(jsonify({
-            "message": "status is not present",
-            "required": incident_data.errors}),
-            400)
+                "message": "status is not present",
+                "required": incident_data.errors}),
+                400)
         user = get_jwt_identity()
-        
+
         isAdmin = self.u.get_user(user)['isadmin']
-        
+
         if isAdmin == True:
-            update = self.i.update_status(incidentId,data['status'])
+            update = self.i.update_status(incidentId, data['status'])
         else:
             return make_response(jsonify({
                 "message": "Incident does not exist/ Not Admin"
             }), 401)
-        
+
         if update == True:
             return make_response(jsonify({
-                'message':'Incident status updated'}),
+                'message': 'Incident status updated'}),
                 200)
         return make_response(jsonify({
-            "message" : "Status can only be draft,under-investigation,resolved or rejected",
+            "message": "Status can only be draft,under-investigation,resolved or rejected",
         }), 400)
