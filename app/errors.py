@@ -12,22 +12,3 @@ def page_not_found(err):
             "message": "Page not found"
         }
     ), 404)
-
-
-# @errors.app_errorhandler(500)
-# def server_error(err):
-#     return make_response(jsonify(
-#         {
-#             "status": 500,
-#             "message": "An exception occured, server error"
-#         }
-#     ), 500)
-
-# @errors.app_errorhandler(405)
-# def method_not_allowed(err):
-#     return make_response(jsonify(
-#         {
-#             "status": 405,
-#             "message": "Method is not allowed"
-#         }
-#     ), 405)

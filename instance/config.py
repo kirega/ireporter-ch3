@@ -5,6 +5,8 @@ class Config():
     DEBUG = False
     TESTING = False
     JWT_SECRET_KEY = 'jwt-secret-string'
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     DB_HOST = os.environ.get('DB_HOST')
     DB_USERNAME = os.environ.get('DB_USERNAME')
     DB_PASS = os.environ.get('DB_PASS')

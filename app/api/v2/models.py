@@ -142,3 +142,43 @@ class Incident():
         else:
             self.db.commit()
             return True
+
+
+class RevokeToken():
+
+    def __init__(self):
+        """
+        Instantiate the connection to postgres and the psycopg2 cursor
+        """
+        self.db = init_db()
+        self.curr = self.db.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor)
+
+    def add(self, jti):
+        """
+        Adds a new jti into the database
+        """
+        try:
+            self.curr.execute("INSERT INTO public.\"RevokeToken\" (jti) \
+                VALUES (%s)", (jti,))
+        except psycopg2.DatabaseError:
+            return False
+        else:
+            self.db.commit()
+            return True
+
+    def is_jwt_blacklisted(self, jti):
+        """
+        Finds to see if a jwt has been blacklisted.
+        """
+        try:
+            self.curr.execute("SELECT * FROM public.\"RevokeToken\" \
+                        WHERE jti = %s", (jti,))
+
+        except psycopg2.DatabaseError:
+            return False
+        else:
+            present = self.curr.fetchall()
+            if present is None or len(present) < 1:
+                return False
+            return True

@@ -3,12 +3,13 @@ import os
 
 DB_HOST = os.environ.get('DB_HOST')
 DB_USERNAME = os.environ.get('DB_USERNAME')
-DB_PASS= os.environ.get('DB_PASS')
-DB_NAME= os.environ.get('DB_NAME_TEST')
-DB_PORT= os.environ.get('DB_PORT')
+DB_PASS = os.environ.get('DB_PASS')
+DB_NAME = os.environ.get('DB_NAME_TEST')
+DB_PORT = os.environ.get('DB_PORT')
 
 URL = "dbname='{}' host='{}' port='{}' user='{}' \
- password='{}'".format(DB_NAME,DB_HOST,DB_PORT,DB_USERNAME,DB_PASS)
+ password='{}'".format(DB_NAME, DB_HOST, DB_PORT, DB_USERNAME, DB_PASS)
+
 
 def tables():
     table1 = """CREATE TABLE IF NOT EXISTS "User"
@@ -36,7 +37,12 @@ def tables():
         createdOn timestamp DEFAULT now(),
         FOREIGN KEY (createdBy) REFERENCES public."User" (id)
     );"""
-    table_queries = [table1, table2]
+
+    table3 = """CREATE TABLE IF NOT EXISTS "RevokeToken"
+    ( id serial PRIMARY KEY,
+      jti varchar(255) UNIQUE);
+    """
+    table_queries = [table1, table2, table3]
     return table_queries
 
 
