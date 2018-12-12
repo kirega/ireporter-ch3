@@ -2,7 +2,7 @@ from app import create_app
 from instance.config import settings
 from flask import make_response, jsonify
 
-app = create_app(settings['testing'])
+app = create_app(settings['production'])
 
 if __name__ == '__main__':
     app.run()

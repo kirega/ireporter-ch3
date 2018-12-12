@@ -4,7 +4,7 @@ import os
 DB_HOST = os.environ.get('DB_HOST')
 DB_USERNAME = os.environ.get('DB_USERNAME')
 DB_PASS = os.environ.get('DB_PASS')
-DB_NAME = os.environ.get('DB_NAME_TEST')
+DB_NAME = os.environ.get('DB_NAME')
 DB_PORT = os.environ.get('DB_PORT')
 
 URL = "dbname='{}' host='{}' port='{}' user='{}' \
