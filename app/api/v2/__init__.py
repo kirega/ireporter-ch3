@@ -17,5 +17,5 @@ api.add_resource(IncidentEndpoint, '/incident/<incidentId>')
 api.add_resource(IncidentEditCommentEndpoint, '/incident/<incidentId>/comment')
 api.add_resource(IncidentEditLocationEndpoint,
                  '/incident/<incidentId>/location')
-api.add_resource(   , '/incident/<incidentId>/status')
+api.add_resource(AdminStatusEndpoint, '/incident/<incidentId>/status')
 api.add_resource(RefreshTokenEndpoint, '/token')
