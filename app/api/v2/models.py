@@ -100,6 +100,13 @@ class Incident():
             return False
         else:
             return self.curr.fetchall()
+    def get_all(self):
+        try:
+            self.curr.execute("SELECT * FROM public.\"Incident\" ;")
+        except psycopg2.ProgrammingError:
+            return False
+        else:
+            return self.curr.fetchall()
 
     def validate_edit(self, incidentId, createdBy):
         try:

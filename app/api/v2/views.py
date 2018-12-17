@@ -163,7 +163,11 @@ class AllIncidentsEndpoint(BaseEndpoint):
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
-        results = self.i.get_incidents(createdBy)
+        isAdmin = self.u.get_user(user)['isadmin']
+        if isAdmin:
+            results = self.i.get_all()
+        else:
+            results = self.i.get_incidents(createdBy)
         if results == False or results is None:
             return make_response(jsonify({"message": "No incidents"}))
         return make_response(jsonify(results), 200)
