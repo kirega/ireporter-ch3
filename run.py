@@ -7,7 +7,6 @@ app = create_app(settings['production'])
 if __name__ == '__main__':
     app.run()
 
-
 @app.errorhandler(404)
 def page_not_found(err):
     """Handles all 404 error"""
@@ -33,7 +32,16 @@ def method_not_allowed(err):
 def server_error(err):
     return make_response(jsonify(
         {
-            "status": 405,
+            "status": 500,
             "message": "Server error encountered"
         }
-    ), 405)
+    ), 500)
+
+@app.errorhandler(400)
+def bad_request(err):
+    return make_response(jsonify(
+        {
+            "status": 400,
+            "message": "Please provide required information"
+        }
+    ), 400)

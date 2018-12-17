@@ -101,7 +101,8 @@ class LogoutEndpoint(BaseEndpoint):
         jti = get_raw_jwt()['jti']
         if RevokeToken().add(jti):
             return make_response(jsonify({
-                "message": "Successfully logged out!"
+                "message": "Successfully logged out!",
+                "status": 200
             }), 200)
 
 
@@ -147,11 +148,13 @@ class AllIncidentsEndpoint(BaseEndpoint):
         )
         if success:
             return make_response(jsonify({
-                "message": "New incident created"}
+                "message": "New incident created",
+                "status": 201 }
             ), 201)
 
         return make_response(jsonify({
-            "message": "Incident can only be red-flag/intervention"}), 400)
+            "message": "Incident can only be red-flag/intervention",
+            "status": 400}), 400)
 
     @jwt_required
     def get(self):
@@ -176,13 +179,19 @@ class IncidentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+            return make_response(jsonify({
+                "message": "Failed! incidentId is not an id",
+                "status": 400
+                }), 400)
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
         results = self.i.get_incident(incidentId, createdBy)
         if results == False or results is None:
-            return make_response(jsonify({"message": "No incident by that id/ Not owned"}), 404)
+            return make_response(jsonify({
+                "message": "No incident by that id/ Not owned",
+                "status": 404
+                }), 404)
         return make_response(jsonify(results), 200)
 
     @jwt_required
@@ -194,7 +203,9 @@ class IncidentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+            return make_response(jsonify({
+                "message": "Failed! incidentId is not an id",
+                "status": 400}), 400)
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
@@ -223,7 +234,9 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
         try:
             incidentId = int(incidentId)
         except ValueError:
-            return make_response(jsonify({"message": "Failed! incidentId is not an id"}), 400)
+            return make_response(jsonify({
+                "message": "Failed! incidentId is not an id",
+                "status": 400}), 400)
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
@@ -233,6 +246,7 @@ class IncidentEditCommentEndpoint(BaseEndpoint):
         if incident_data.errors:
             return make_response(jsonify({
                 "message": "Comment is not present",
+                "status": 400,
                 "required": incident_data.errors}),
                 400)
 
@@ -325,7 +339,8 @@ class AdminStatusEndpoint(BaseEndpoint):
 
         if update == True:
             return make_response(jsonify({
-                'message': 'Incident status updated'}),
+                'message': 'Incident status updated',
+                'status': 200}),
                 200)
         return make_response(jsonify({
             "message": "Status can only be draft,under-investigation,resolved or rejected",

@@ -25,9 +25,9 @@ class IncidentSchema(Schema):
     incidentId = fields.Int()
     createdOn = fields.DateTime()
     createdBy = fields.Int(required=True)
-    incidentType = fields.Str(required=True)
-    location = fields.Str(required=True)
-    comment = fields.Str(required=True)
+    incidentType = fields.Str(required=True, validate=validate_string)
+    location = fields.Str(required=True, validate=validate_string)
+    comment = fields.Str(required=True,validate=validate_string)
     status = fields.Str()
     images = fields.List(fields.Str())
     videos = fields.List(fields.Str())
@@ -52,6 +52,6 @@ class UserSchema(Schema):
 class IncidentEditSchema(Schema):
     """Incident schema for edit comment/location as well as delete"""
     userid = fields.Int(required=True)
-    comment = fields.Str(required=True)
-    location = fields.Str(required=True)
-    status = fields.Str(required=True)
+    comment = fields.Str(required=True,validate=validate_string)
+    location = fields.Str(required=True,validate=validate_string)
+    status = fields.Str(required=True,validate=validate_string)
