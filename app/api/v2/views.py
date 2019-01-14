@@ -13,7 +13,9 @@ from werkzeug.utils import secure_filename
 from .models import User, Incident, RevokeToken
 from .validators import IncidentEditSchema, IncidentSchema, UserSchema
 
-UPLOAD_FOLDER = '/home/kirega/Documents/Projects/ireporter-ch3/app/uploads'
+# UPLOAD_FOLDER = '/app/uploads'
+UPLOAD_FOLDER = os.path.abspath("app/uploads")
+print(UPLOAD_FOLDER)
 ALLOWED_EXTENSIONS = set(['mp4', 'png', 'jpg', 'jpeg'])
 
 
