@@ -1,22 +1,31 @@
 """
 this file will include all the view endpoints for the application.
 """
+import os
 import datetime
 import json
-from flask import jsonify, make_response, request
+from flask import jsonify, make_response, request, url_for, send_from_directory
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt_identity, jwt_refresh_token_required,
                                 jwt_required, get_raw_jwt)
 from flask_restful import Resource
-
+from werkzeug.utils import secure_filename
 from .models import User, Incident, RevokeToken
 from .validators import IncidentEditSchema, IncidentSchema, UserSchema
+
+UPLOAD_FOLDER = '/home/kirega/Documents/Projects/ireporter-ch3/app/uploads'
+ALLOWED_EXTENSIONS = set(['mp4', 'png', 'jpg', 'jpeg'])
 
 
 class BaseEndpoint(Resource):
     def __init__(self):
         self.u = User()
         self.i = Incident()
+
+    @staticmethod
+    def allowed_file(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class SignUpEndpoint(BaseEndpoint):
@@ -126,10 +135,9 @@ class AllIncidentsEndpoint(BaseEndpoint):
     def post(self):
         """Endpoint POST /incidents
         Allows creation of new incidents"""
-
-        data = request.get_json(force=True)
+        data = request.form
         incident_data, error = IncidentSchema(
-            only=('incidentType', 'location', 'comment', 'images', 'videos')
+            only=('incidentType', 'location', 'comment',)
         ).load(data)
         if error:
             return make_response(jsonify({
@@ -138,18 +146,39 @@ class AllIncidentsEndpoint(BaseEndpoint):
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
+        videos = []
+        images = []
+        if 'image' in request.files:
+            files = request.files.getlist('image')
+            for file in files:
+                if file and self.allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(UPLOAD_FOLDER, filename))
+                    # images.append(os.path.join(UPLOAD_FOLDER, filename))
+                    images.append(url_for('uploaded_file', filename=filename))
+
+        if 'video' in request.files:
+            files = request.files.getlist('video')
+            for file in files:
+                if file and self.allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(UPLOAD_FOLDER, filename))
+                    if filename.rsplit('.', 1)[1].lower() == 'mp4':
+                        videos.append(
+                            os.path.join(UPLOAD_FOLDER, filename))
+
         success = self.i.save(
             incident_data['incidentType'],
             incident_data['comment'],
             incident_data['location'],
             createdBy,
-            incident_data['images'],
-            incident_data['videos'],
+            images,
+            videos,
         )
         if success:
             return make_response(jsonify({
                 "message": "New incident created",
-                "status": 201 }
+                "status": 201}
             ), 201)
 
         return make_response(jsonify({
@@ -186,7 +215,7 @@ class IncidentEndpoint(BaseEndpoint):
             return make_response(jsonify({
                 "message": "Failed! incidentId is not an id",
                 "status": 400
-                }), 400)
+            }), 400)
 
         user = get_jwt_identity()
         createdBy = self.u.get_user(user)['id']
@@ -195,7 +224,7 @@ class IncidentEndpoint(BaseEndpoint):
             return make_response(jsonify({
                 "message": "No incident by that id/ Not owned",
                 "status": 404
-                }), 404)
+            }), 404)
         return make_response(jsonify(results), 200)
 
     @jwt_required
