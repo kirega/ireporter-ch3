@@ -154,7 +154,6 @@ class AllIncidentsEndpoint(BaseEndpoint):
                 if file and self.allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(UPLOAD_FOLDER, filename))
-                    # images.append(os.path.join(UPLOAD_FOLDER, filename))
                     images.append(url_for('uploaded_file', filename=filename))
 
         if 'video' in request.files:
@@ -165,8 +164,8 @@ class AllIncidentsEndpoint(BaseEndpoint):
                     file.save(os.path.join(UPLOAD_FOLDER, filename))
                     if filename.rsplit('.', 1)[1].lower() == 'mp4':
                         videos.append(
-                            os.path.join(UPLOAD_FOLDER, filename))
-
+                            url_for('uploaded_file', filename=filename))
+                            
         success = self.i.save(
             incident_data['incidentType'],
             incident_data['comment'],
