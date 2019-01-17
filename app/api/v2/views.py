@@ -21,6 +21,7 @@ ALLOWED_EXTENSIONS = set(['mp4', 'png', 'jpg', 'jpeg'])
 
 class BaseEndpoint(Resource):
     def __init__(self):
+        """ Sets up the base reusable variables accross the views"""
         self.u = User()
         self.i = Incident()
         self.mail = Mail(current_app)
