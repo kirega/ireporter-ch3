@@ -12,15 +12,19 @@ from flask_restful import Resource
 from werkzeug.utils import secure_filename
 from .models import User, Incident, RevokeToken
 from .validators import IncidentEditSchema, IncidentSchema, UserSchema
+from flask_mail import Message, Mail
+from flask import current_app
 
-UPLOAD_FOLDER = '/home/kirega/Documents/Projects/ireporter-ch3/app/uploads'
+UPLOAD_FOLDER = os.path.abspath("app/uploads")
 ALLOWED_EXTENSIONS = set(['mp4', 'png', 'jpg', 'jpeg'])
 
 
 class BaseEndpoint(Resource):
     def __init__(self):
+        """ Sets up the base reusable variables accross the views"""
         self.u = User()
         self.i = Incident()
+        self.mail = Mail(current_app)
 
     @staticmethod
     def allowed_file(filename):
@@ -68,6 +72,9 @@ class SignUpEndpoint(BaseEndpoint):
                 user_data["password"]
             )
         if success:
+            msg = Message('Welcome', recipients=[user_data['email']])
+            msg.body = "Welcome to iReporter, your sign up was successful"
+            self.mail.send(msg)
             return make_response(jsonify({
                 "message": "Sign Up successful. Welcome!"}
             ), 201)
@@ -135,7 +142,10 @@ class AllIncidentsEndpoint(BaseEndpoint):
     def post(self):
         """Endpoint POST /incidents
         Allows creation of new incidents"""
-        data = request.form
+        if request.form:
+            data = request.form
+        else:
+            data = json.loads(request.data)
         incident_data, error = IncidentSchema(
             only=('incidentType', 'location', 'comment',)
         ).load(data)
@@ -165,7 +175,7 @@ class AllIncidentsEndpoint(BaseEndpoint):
                     if filename.rsplit('.', 1)[1].lower() == 'mp4':
                         videos.append(
                             url_for('uploaded_file', filename=filename))
-                            
+
         success = self.i.save(
             incident_data['incidentType'],
             incident_data['comment'],

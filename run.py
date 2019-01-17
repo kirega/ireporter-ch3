@@ -1,6 +1,7 @@
 from app import create_app
 from instance.config import settings
 from flask import make_response, jsonify, send_from_directory
+import os
 
 app = create_app(settings['production'])
 
@@ -46,7 +47,7 @@ def bad_request(err):
         }
     ), 400)
 
-UPLOAD_FOLDER = '/home/kirega/Documents/Projects/ireporter-ch3/app/uploads'
+UPLOAD_FOLDER = os.path.abspath("app/uploads")
 @app.route('/api/v2/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
