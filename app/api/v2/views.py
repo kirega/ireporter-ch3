@@ -15,7 +15,6 @@ from .validators import IncidentEditSchema, IncidentSchema, UserSchema
 
 # UPLOAD_FOLDER = '/app/uploads'
 UPLOAD_FOLDER = os.path.abspath("app/uploads")
-print(UPLOAD_FOLDER)
 ALLOWED_EXTENSIONS = set(['mp4', 'png', 'jpg', 'jpeg'])
 
 
@@ -137,7 +136,10 @@ class AllIncidentsEndpoint(BaseEndpoint):
     def post(self):
         """Endpoint POST /incidents
         Allows creation of new incidents"""
-        data = request.form
+        if request.form:
+            data = request.form
+        else:
+            data = json.loads(request.data)
         incident_data, error = IncidentSchema(
             only=('incidentType', 'location', 'comment',)
         ).load(data)
