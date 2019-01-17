@@ -95,7 +95,7 @@ class IncidentTestCase(BaseTestCase):
             data['message'], "Comment is not present")
 
     def test_7_update_comment_on_incident_not_in_draft_or_owned(self):
-        """Test that an incident that is not in draft cannot be 
+        """Test that an incident that is not in draft cannot be
         edited except to change the status"""
         data = json.dumps({"comment": "Too many potholes"})
         result = self.app.put('/api/v2/incident/100/comment',
@@ -127,7 +127,7 @@ class IncidentTestCase(BaseTestCase):
             data['message'], "location is not present")
 
     def test_10_update_location_on_incident_not_in_draft_owned(self):
-        """Test that an incident that is not in draft cannot be 
+        """Test that an incident that is not in draft cannot be
         edited except to change the status"""
         data = json.dumps({"location": "Too many potholes"})
         result = self.app.put('/api/v2/incident/100/location',
@@ -191,7 +191,7 @@ class IncidentDeleteTestCase(BaseTestCase):
         self.app.post('/api/v2/signup', data=self.admin_signup_data)
         admin_result = self.app.post('/api/v2/login', data=self.admin_data)
         self.admin_token = json.loads(admin_result.data)['access_token']
-        
+
     def test_1_update_an_incident_location(self):
         """Test delete works successfully on an incident"""
         data = json.dumps({"location": "1.3242, -53.3"})
@@ -271,3 +271,96 @@ class IncidentDeleteTestCase(BaseTestCase):
         self.assertEqual(result.status_code, 201)
         data = json.loads(result.data)
         self.assertEqual(data['message'], "New access token created")
+
+
+class EdgeCaseTest(BaseTestCase):
+    """
+        This test case class implements other tests that were not considered during the initial writing of tests
+    """
+
+    def setUp(self):
+        """
+            Sets up all the reusable parts of the test cases.
+            In this way mkaing the testcases more maintainable,
+            and cognitive complexity.
+        """
+        self.new_incident_data_with_wrong_type = json.dumps({
+            "comment": "Police taking a bribe",
+            "incidentType": "fadfadfadfa",
+            "location": "-1.28333, 36.81667",
+            "images": ["http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.jpg"],
+            "videos": ["http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                       "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"]
+        })
+        self.user_signup_data = json.dumps({
+            "first_name": "Joseph",
+            "last_name": "Mutiga",
+            "other_names": "Kirega",
+            "phonenumber": "0716570355",
+            "email": "joseph.mutiga934@gmail.com",
+            "username": "Joe",
+            "password": "123456990"
+        })
+        self.login_data = json.dumps(
+            {"username": "Joe", "password": "123456990"})
+        self.app.post('/api/v2/signup', data=self.user_signup_data)
+        result = self.app.post('/api/v2/login', data=self.login_data)
+        self.token = json.loads(result.data)['access_token']
+
+    def test_1_get_when_no_incidents_exist(self):
+        """Test that the view refuses  non_id accesses"""
+        result = self.app.get("/api/v2/incidents",
+                              headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 200)
+        data = json.loads(result.data)
+        self.assertEqual(data['message'], "No incidents")
+
+    def test_2_create_new_incident_with_wrong_type(self):
+        """Test failing in creation of a new incident"""
+        result = self.app.post('/api/v2/incidents',
+                               data=self.new_incident_data_with_wrong_type,
+                               headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(
+            data['message'], "Incident can only be red-flag/intervention")
+
+    def test_get_incident_with_no_id(self):
+        """Test that the view refuses  non_id accesses"""
+        result = self.app.get("/api/v2/incident/adfa",
+                              headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(
+            data['message'], "Failed! incidentId is not an id")
+
+    def test_delete_incident_with_no_id(self):
+        """Test that the view refuses  non_id accesses"""
+        result = self.app.delete("/api/v2/incident/adfa",
+                                 headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(
+            data['message'], "Failed! incidentId is not an id")
+
+    def test_put_incident_comment_with_no_id(self):
+        """Test that the view refuses  non_id accesses"""
+        data = json.dumps({"commment": "Too many potholes",
+                           })
+        result = self.app.put("/api/v2/incident/adfa/comment", data=data,
+                              headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(
+            data['message'], "Failed! incidentId is not an id")
+
+    def test_put_incident_location_with_no_id(self):
+        """Test that the view refuses  non_id accesses"""
+        data = json.dumps({"location": "Too many potholes",
+                           })
+        result = self.app.put("/api/v2/incident/adfa/location", data=data,
+                              headers=dict(Authorization="Bearer " + self.token))
+        self.assertEqual(result.status_code, 400)
+        data = json.loads(result.data)
+        self.assertEqual(
+            data['message'], "Failed! incidentId is not an id")
